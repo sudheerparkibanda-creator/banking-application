@@ -1,0 +1,454 @@
+{
+  "info": {
+    "name": "Banking Application APIs",
+    "_postman_id": "9d5c5f0c-d75f-44c6-9c81-f1d1266c9c01",
+    "description": "Comprehensive Postman collection for Banking Microservices Application.\n\nServices:\n  • Config Server (8888) - Centralized configuration management\n  • Service Registry (8761) - Eureka service discovery\n  • Customer Service (8081) - Customer management APIs\n  • Account Service (8082) - Account management APIs\n  • API Gateway (8080) - Single entry point with routing to downstream services\n\nStack: Spring Boot 4.0.4, Spring Cloud 2025.1.0, OpenTelemetry tracing, Resilience4j circuit breaker",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "configServerUrl",   "value": "http://localhost:8888" },
+    { "key": "serviceRegistryUrl","value": "http://localhost:8761" },
+    { "key": "customerServiceUrl","value": "http://localhost:8081" },
+    { "key": "accountServiceUrl", "value": "http://localhost:8082" },
+    { "key": "apiGatewayUrl",     "value": "http://localhost:8080" },
+    { "key": "customerId",        "value": "1" },
+    { "key": "accountId",         "value": "1" },
+    { "key": "depositAmount",     "value": "250.0" },
+    { "key": "withdrawAmount",    "value": "100.0" }
+  ],
+  "item": [
+    {
+      "name": "Infrastructure",
+      "item": [
+        {
+          "name": "Config Server - Customer Config",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{configServerUrl}}/customer-service/default",
+              "host": ["{{configServerUrl}}"],
+              "path": ["customer-service", "default"]
+            }
+          }
+        },
+        {
+          "name": "Config Server - Account Config",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{configServerUrl}}/account-service/default",
+              "host": ["{{configServerUrl}}"],
+              "path": ["account-service", "default"]
+            }
+          }
+        },
+        {
+          "name": "Config Server - API Gateway Config",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{configServerUrl}}/api-gateway/default",
+              "host": ["{{configServerUrl}}"],
+              "path": ["api-gateway", "default"]
+            }
+          }
+        },
+        {
+          "name": "Service Registry - Registered Apps",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{serviceRegistryUrl}}/eureka/apps",
+              "host": ["{{serviceRegistryUrl}}"],
+              "path": ["eureka", "apps"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "API Gateway - Customer APIs",
+      "description": "All customer requests routed through API Gateway on port 8080 at /api/customers/**",
+      "item": [
+        {
+          "name": "GW - Add Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
+                  "var body = pm.response.json();",
+                  "if (body && body.id) { pm.collectionVariables.set('customerId', body.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sudhe Customer\",\n  \"email\": \"sudhe.customer@example.com\",\n  \"phone\": \"9876543210\",\n  \"address\": \"Hyderabad\"\n}"
+            },
+            "url": {
+              "raw": "{{apiGatewayUrl}}/api/customers",
+              "host": ["{{apiGatewayUrl}}"],
+              "path": ["api", "customers"]
+            }
+          }
+        },
+        {
+          "name": "GW - Get All Customers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiGatewayUrl}}/api/customers",
+              "host": ["{{apiGatewayUrl}}"],
+              "path": ["api", "customers"]
+            }
+          }
+        },
+        {
+          "name": "GW - Get Customer By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiGatewayUrl}}/api/customers/{{customerId}}",
+              "host": ["{{apiGatewayUrl}}"],
+              "path": ["api", "customers", "{{customerId}}"]
+            }
+          }
+        },
+        {
+          "name": "GW - Update Customer",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sudhe Updated\",\n  \"email\": \"sudhe.updated@example.com\",\n  \"phone\": \"9123456789\",\n  \"address\": \"Bengaluru\"\n}"
+            },
+            "url": {
+              "raw": "{{apiGatewayUrl}}/api/customers/{{customerId}}",
+              "host": ["{{apiGatewayUrl}}"],
+              "path": ["api", "customers", "{{customerId}}"]
+            }
+          }
+        },
+        {
+          "name": "GW - Delete Customer (Cascade Accounts)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{apiGatewayUrl}}/api/customers/{{customerId}}",
+              "host": ["{{apiGatewayUrl}}"],
+              "path": ["api", "customers", "{{customerId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "API Gateway - Account APIs",
+      "description": "All account requests routed through API Gateway on port 8080 at /api/accounts/**",
+      "item": [
+        {
+          "name": "GW - Create Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
+                  "var body = pm.response.json();",
+                  "if (body && body.id) { pm.collectionVariables.set('accountId', body.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": {{customerId}},\n  \"balance\": 1000.0,\n  \"accountType\": \"SAVINGS\"\n}"
+            },
+            "url": {
+              "raw": "{{apiGatewayUrl}}/api/accounts",
+              "host": ["{{apiGatewayUrl}}"],
+              "path": ["api", "accounts"]
+            }
+          }
+        },
+        {
+          "name": "GW - Add Money",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{apiGatewayUrl}}/api/accounts/{{accountId}}/add?amount={{depositAmount}}&customerId={{customerId}}",
+              "host": ["{{apiGatewayUrl}}"],
+              "path": ["api", "accounts", "{{accountId}}", "add"],
+              "query": [
+                { "key": "amount",     "value": "{{depositAmount}}" },
+                { "key": "customerId", "value": "{{customerId}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GW - Withdraw Money",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{apiGatewayUrl}}/api/accounts/{{accountId}}/withdraw?amount={{withdrawAmount}}&customerId={{customerId}}",
+              "host": ["{{apiGatewayUrl}}"],
+              "path": ["api", "accounts", "{{accountId}}", "withdraw"],
+              "query": [
+                { "key": "amount",     "value": "{{withdrawAmount}}" },
+                { "key": "customerId", "value": "{{customerId}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GW - Get Account Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiGatewayUrl}}/api/accounts/{{accountId}}",
+              "host": ["{{apiGatewayUrl}}"],
+              "path": ["api", "accounts", "{{accountId}}"]
+            }
+          }
+        },
+        {
+          "name": "GW - Delete Account",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{apiGatewayUrl}}/api/accounts/{{accountId}}",
+              "host": ["{{apiGatewayUrl}}"],
+              "path": ["api", "accounts", "{{accountId}}"]
+            }
+          }
+        },
+        {
+          "name": "GW - Delete Accounts By Customer",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{apiGatewayUrl}}/api/accounts/deleteByCustomer/{{customerId}}",
+              "host": ["{{apiGatewayUrl}}"],
+              "path": ["api", "accounts", "deleteByCustomer", "{{customerId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customer Service (Direct)",
+      "item": [
+        {
+          "name": "Add Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
+                  "var body = pm.response.json();",
+                  "if (body && body.id) { pm.collectionVariables.set('customerId', body.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sudhe Customer\",\n  \"email\": \"sudhe.customer@example.com\",\n  \"phone\": \"9876543210\",\n  \"address\": \"Hyderabad\"\n}"
+            },
+            "url": {
+              "raw": "{{customerServiceUrl}}/customers",
+              "host": ["{{customerServiceUrl}}"],
+              "path": ["customers"]
+            }
+          }
+        },
+        {
+          "name": "Get All Customers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{customerServiceUrl}}/customers",
+              "host": ["{{customerServiceUrl}}"],
+              "path": ["customers"]
+            }
+          }
+        },
+        {
+          "name": "Get Customer By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{customerServiceUrl}}/customers/{{customerId}}",
+              "host": ["{{customerServiceUrl}}"],
+              "path": ["customers", "{{customerId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Customer",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sudhe Customer Updated\",\n  \"email\": \"sudhe.updated@example.com\",\n  \"phone\": \"9123456789\",\n  \"address\": \"Bengaluru\"\n}"
+            },
+            "url": {
+              "raw": "{{customerServiceUrl}}/customers/{{customerId}}",
+              "host": ["{{customerServiceUrl}}"],
+              "path": ["customers", "{{customerId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Customer (Cascade Accounts)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{customerServiceUrl}}/customers/{{customerId}}",
+              "host": ["{{customerServiceUrl}}"],
+              "path": ["customers", "{{customerId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Account Service (Direct)",
+      "item": [
+        {
+          "name": "Create Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
+                  "var body = pm.response.json();",
+                  "if (body && body.id) { pm.collectionVariables.set('accountId', body.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": {{customerId}},\n  \"balance\": 1000.0,\n  \"accountType\": \"SAVINGS\"\n}"
+            },
+            "url": {
+              "raw": "{{accountServiceUrl}}/accounts",
+              "host": ["{{accountServiceUrl}}"],
+              "path": ["accounts"]
+            }
+          }
+        },
+        {
+          "name": "Add Money",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{accountServiceUrl}}/accounts/{{accountId}}/add?amount={{depositAmount}}&customerId={{customerId}}",
+              "host": ["{{accountServiceUrl}}"],
+              "path": ["accounts", "{{accountId}}", "add"],
+              "query": [
+                { "key": "amount",     "value": "{{depositAmount}}" },
+                { "key": "customerId", "value": "{{customerId}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Withdraw Money",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{accountServiceUrl}}/accounts/{{accountId}}/withdraw?amount={{withdrawAmount}}&customerId={{customerId}}",
+              "host": ["{{accountServiceUrl}}"],
+              "path": ["accounts", "{{accountId}}", "withdraw"],
+              "query": [
+                { "key": "amount",     "value": "{{withdrawAmount}}" },
+                { "key": "customerId", "value": "{{customerId}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Account Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{accountServiceUrl}}/accounts/{{accountId}}",
+              "host": ["{{accountServiceUrl}}"],
+              "path": ["accounts", "{{accountId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Account",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{accountServiceUrl}}/accounts/{{accountId}}",
+              "host": ["{{accountServiceUrl}}"],
+              "path": ["accounts", "{{accountId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Accounts By Customer",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{accountServiceUrl}}/accounts/deleteByCustomer/{{customerId}}",
+              "host": ["{{accountServiceUrl}}"],
+              "path": ["accounts", "deleteByCustomer", "{{customerId}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

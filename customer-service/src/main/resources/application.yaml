@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: customer-service
+  config:
+    import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888},optional:configserver:http://config-server:8888"
+  cloud:
+    config:
+      fail-fast: false
+
+server:
+  port: 8081
+
+
