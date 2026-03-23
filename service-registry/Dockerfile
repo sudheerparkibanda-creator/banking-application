@@ -1,11 +1,11 @@
 # Multi-stage build
-FROM openjdk:17-jdk-slim AS builder
+FROM eclipse-temurin:17-jdk-slim AS builder
 WORKDIR /build
 COPY target/service-registry-0.0.1-SNAPSHOT.jar app.jar
 RUN jar xf app.jar
 
 # Runtime stage
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-slim
 WORKDIR /app
 
 # Create non-root user
