@@ -8,7 +8,7 @@ services:
       - "8888:8888"
     environment:
       - SPRING_PROFILES_ACTIVE=native
-      - EUREKA_SERVER_URL=http://service-registry:8761/eureka/
+      - EUREKA_SERVER_URL=http://localhost:8761/eureka/
     networks:
       - banking-network
     restart: unless-stopped
@@ -29,9 +29,6 @@ services:
     depends_on:
       config-server:
         condition: service_healthy
-    environment:
-      - CONFIG_SERVER_URL=http://config-server:8888
-      - EUREKA_HOSTNAME=service-registry
     networks:
       - banking-network
     restart: unless-stopped
@@ -53,9 +50,9 @@ services:
       service-registry:
         condition: service_healthy
     environment:
-      - CONFIG_SERVER_URL=http://config-server:8888
-      - EUREKA_SERVER_URL=http://service-registry:8761/eureka/
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+      - CONFIG_SERVER_URL=http://localhost:8888
+      - EUREKA_SERVER_URL=http://localhost:8761/eureka/
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
     networks:
       - banking-network
     restart: unless-stopped
@@ -77,9 +74,9 @@ services:
       service-registry:
         condition: service_healthy
     environment:
-      - CONFIG_SERVER_URL=http://config-server:8888
-      - EUREKA_SERVER_URL=http://service-registry:8761/eureka/
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+      - CONFIG_SERVER_URL=http://localhost:8888
+      - EUREKA_SERVER_URL=http://localhost:8761/eureka/
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
     networks:
       - banking-network
     restart: unless-stopped
@@ -101,9 +98,9 @@ services:
       service-registry:
         condition: service_healthy
     environment:
-      - CONFIG_SERVER_URL=http://config-server:8888
-      - EUREKA_SERVER_URL=http://service-registry:8761/eureka/
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+      - CONFIG_SERVER_URL=http://localhost:8888
+      - EUREKA_SERVER_URL=http://localhost:8761/eureka/
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
     networks:
       - banking-network
     restart: unless-stopped
