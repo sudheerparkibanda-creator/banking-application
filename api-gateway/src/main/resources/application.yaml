@@ -6,3 +6,5 @@ spring:
   cloud:
     config:
       fail-fast: false
+server:
+  port:8080
