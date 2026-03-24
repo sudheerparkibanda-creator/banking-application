@@ -1,0 +1,23 @@
+# Handle line endings automatically for files detected as text
+# and leave all files detected as binary untouched.
+* text=auto
+
+# Force Unix LF for shell scripts and Maven wrapper
+*.sh text eol=lf
+mvnw text eol=lf
+
+# Force CRLF for Windows batch files
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Treat Dockerfiles as text with LF
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+
+# Java source files
+*.java text eol=lf
+*.xml text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.properties text eol=lf
+

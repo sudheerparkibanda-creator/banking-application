@@ -11,6 +11,13 @@ eureka:
       default-zone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
 
 management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
   tracing:
     sampling:
       probability: 1.0
