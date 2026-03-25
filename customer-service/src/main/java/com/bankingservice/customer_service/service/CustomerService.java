@@ -92,7 +92,7 @@ public class CustomerService {
         CircuitBreaker circuitBreaker = circuitBreakerFactory.create("account-service");
         circuitBreaker.run(
                 () -> {
-                    restTemplate.delete("http://account-service/accounts/deleteByCustomer/" + id);
+                    restTemplate.delete("http://ACCOUNT-SERVICE/accounts/deleteByCustomer/" + id);
                     return null;
                 },
                 throwable -> {

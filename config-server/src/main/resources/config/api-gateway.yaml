@@ -7,14 +7,14 @@ spring:
         webmvc:
           routes:
             - id: customer-service
-              uri: lb://customer-service
+              uri: lb://CUSTOMER-SERVICE
               predicates:
                 - Path=/api/customers,/api/customers/**
               filters:
                 - StripPrefix=1
 
             - id: account-service
-              uri: lb://account-service
+              uri: lb://ACCOUNT-SERVICE
               predicates:
                 - Path=/api/accounts,/api/accounts/**
               filters:
@@ -26,7 +26,7 @@ server:
 eureka:
   client:
     service-url:
-      default-zone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://service-registry:8761/eureka/}
     register-with-eureka: true
     fetch-registry: true
   instance:

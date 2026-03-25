@@ -121,7 +121,7 @@ public class AccountService {
                 () -> {
                     try {
                         CustomerDTO customer = restTemplate.getForObject(
-                                "http://customer-service/customers/" + customerId, CustomerDTO.class);
+                                "http://CUSTOMER-SERVICE/customers/" + customerId, CustomerDTO.class);
                         if (customer == null) {
                             log.warn("customer-service returned empty customer for customerId={}", customerId);
                             throw new CustomerNotFoundException(customerId);

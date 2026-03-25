@@ -2,12 +2,26 @@ spring:
   application:
     name: account-service
   config:
-    import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888},optional:configserver:http://config-server:8888"
+    import: "configserver:${CONFIG_SERVER_URL:http://localhost:8888}"
   cloud:
     config:
-      fail-fast: false
+      fail-fast: true
+
+eureka:
+  client:
+    service-url:
+      default-zone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://service-registry:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+    registry-fetch-interval-seconds: 5
+    eureka-server-connect-timeout-seconds: 30
+    eureka-server-read-timeout-seconds: 30
+    service-url-poll-interval-seconds: 300
+  instance:
+    hostname: ${EUREKA_INSTANCE_HOSTNAME:${spring.application.name}}
+    prefer-ip-address: false
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
 
 server:
   port: 8082
-
-

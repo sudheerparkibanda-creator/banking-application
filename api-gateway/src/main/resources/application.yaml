@@ -2,9 +2,9 @@ spring:
   application:
     name: api-gateway
   config:
-    import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}"
+    import: "configserver:${CONFIG_SERVER_URL:http://localhost:8888}"
   cloud:
     config:
-      fail-fast: false
+      fail-fast: true
 server:
-  port:8080
+  port: ${SERVER_PORT:8080}

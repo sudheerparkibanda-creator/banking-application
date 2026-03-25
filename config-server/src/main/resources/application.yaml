@@ -12,6 +12,10 @@ spring:
 server:
   port: 8888
 
+eureka:
+  instance:
+    hostname: ${EUREKA_HOSTNAME:config-server}
+
 management:
   endpoints:
     web:
@@ -20,4 +24,3 @@ management:
   endpoint:
     health:
       show-details: always
-

@@ -3,5 +3,5 @@ spring:
     name: service-registry
   cloud:
     config:
-      uri: ${CONFIG_SERVER_URL:http://localhost:8888}
+      uri: ${CONFIG_SERVER_URL:http://config-server:8888}
       fail-fast: true

@@ -7,17 +7,16 @@ services:
     ports:
       - "8888:8888"
     environment:
-      - SPRING_PROFILES_ACTIVE=native
-      - EUREKA_SERVER_URL=http://localhost:8761/eureka/
+      - EUREKA_HOSTNAME=config-server
     networks:
       - banking-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8888/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
-      interval: 15s
+      test: ["CMD", "curl", "-fsS", "http://localhost:8888/actuator/health"]
+      interval: 10s
       timeout: 10s
-      retries: 5
-      start_period: 40s
+      retries: 20
+      start_period: 920s
 
   service-registry:
     image: service-registry:latest
@@ -29,15 +28,18 @@ services:
     depends_on:
       config-server:
         condition: service_healthy
+    environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
+      - EUREKA_HOSTNAME=service-registry
     networks:
       - banking-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8761/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
-      interval: 15s
+      test: ["CMD", "curl", "-fsS", "http://localhost:8761/eureka/apps"]
+      interval: 10s
       timeout: 10s
-      retries: 5
-      start_period: 40s
+      retries: 10
+      start_period: 920s
 
   customer-service:
     image: customer-service:latest
@@ -50,18 +52,23 @@ services:
       service-registry:
         condition: service_healthy
     environment:
-      - CONFIG_SERVER_URL=http://localhost:8888
-      - EUREKA_SERVER_URL=http://localhost:8761/eureka/
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
+      - CONFIG_SERVER_URL=http://config-server:8888
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+      - EUREKA_INSTANCE_HOSTNAME=customer-service
+      - EUREKA_CLIENT_INITIAL_INSTANCE_INFO_REPLICATION_INTERVAL_SECONDS=10
+      - EUREKA_CLIENT_REGISTRY_FETCH_INTERVAL_SECONDS=5
+      - EUREKA_CLIENT_EUREKA_SERVER_CONNECT_TIMEOUT_SECONDS=60
+      - EUREKA_CLIENT_EUREKA_SERVER_READ_TIMEOUT_SECONDS=60
+      - EUREKA_CLIENT_SHOULD_ENFORCE_SERVER_SSL=false
     networks:
       - banking-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
+      test: ["CMD", "curl", "-fsS", "http://localhost:8081/actuator/health"]
       interval: 15s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 920s
 
   account-service:
     image: account-service:latest
@@ -74,18 +81,23 @@ services:
       service-registry:
         condition: service_healthy
     environment:
-      - CONFIG_SERVER_URL=http://localhost:8888
-      - EUREKA_SERVER_URL=http://localhost:8761/eureka/
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
+      - CONFIG_SERVER_URL=http://config-server:8888
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+      - EUREKA_INSTANCE_HOSTNAME=account-service
+      - EUREKA_CLIENT_INITIAL_INSTANCE_INFO_REPLICATION_INTERVAL_SECONDS=10
+      - EUREKA_CLIENT_REGISTRY_FETCH_INTERVAL_SECONDS=5
+      - EUREKA_CLIENT_EUREKA_SERVER_CONNECT_TIMEOUT_SECONDS=60
+      - EUREKA_CLIENT_EUREKA_SERVER_READ_TIMEOUT_SECONDS=60
+      - EUREKA_CLIENT_SHOULD_ENFORCE_SERVER_SSL=false
     networks:
       - banking-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8082/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
+      test: ["CMD", "curl", "-fsS", "http://localhost:8082/actuator/health"]
       interval: 15s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 920s
 
   api-gateway:
     image: api-gateway:latest
@@ -95,21 +107,32 @@ services:
     ports:
       - "8080:8080"
     depends_on:
+      config-server:
+        condition: service_healthy
+      customer-service:
+        condition: service_healthy
+      account-service:
+        condition: service_healthy
       service-registry:
         condition: service_healthy
     environment:
-      - CONFIG_SERVER_URL=http://localhost:8888
-      - EUREKA_SERVER_URL=http://localhost:8761/eureka/
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
+      - CONFIG_SERVER_URL=http://config-server:8888
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+      - EUREKA_INSTANCE_HOSTNAME=api-gateway
+      - EUREKA_CLIENT_INITIAL_INSTANCE_INFO_REPLICATION_INTERVAL_SECONDS=10
+      - EUREKA_CLIENT_REGISTRY_FETCH_INTERVAL_SECONDS=5
+      - EUREKA_CLIENT_EUREKA_SERVER_CONNECT_TIMEOUT_SECONDS=60
+      - EUREKA_CLIENT_EUREKA_SERVER_READ_TIMEOUT_SECONDS=60
+      - EUREKA_CLIENT_SHOULD_ENFORCE_SERVER_SSL=false
     networks:
       - banking-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/actuator/health"]
       interval: 15s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 920s
 
 networks:
   banking-network:
